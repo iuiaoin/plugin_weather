@@ -1,8 +1,8 @@
 import requests
 import schedule
+import threading
 import time
 import json
-from multiprocessing import Process
 from plugins import register, Plugin, Event, logger
 from channel.wechat import WeChatChannel
 from utils.const import MessageType
@@ -16,9 +16,8 @@ class Weather(Plugin):
     def __init__(self, config: dict):
         super().__init__(config)
         self.channel = WeChatChannel()
-        processed = Process(target=self.daily_push, name="daily push")
-        processed.daemon = True
-        processed.start()
+        scheduler_thread = threading.Thread(target=self.daily_push)
+        scheduler_thread.start()
 
     def did_receive_message(self, event: Event):
         pass
@@ -54,7 +53,12 @@ class Weather(Plugin):
             reply_msg = self.serialize(content, group_chat, None)
             self.channel.ws.send(reply_msg)
 
-    def serialize(self, content, room_id, sender_id, ) -> str:
+    def serialize(
+        self,
+        content,
+        room_id,
+        sender_id,
+    ) -> str:
         msg = {
             "id": gen_id(),
             "type": MessageType.TXT_MSG.value,
