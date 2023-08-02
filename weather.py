@@ -16,7 +16,7 @@ class Weather(Plugin):
     def __init__(self, config: dict):
         super().__init__(config)
         self.channel = WeChatChannel()
-        scheduler_thread = threading.Thread(target=self.daily_push)
+        scheduler_thread = threading.Thread(target=self.start_schedule)
         scheduler_thread.start()
 
     def did_receive_message(self, event: Event):
@@ -34,15 +34,15 @@ class Weather(Plugin):
     def help(self, **kwargs) -> str:
         return "每日天气预报"
 
-    def daily_push(self):
-        logger.info("Start daily push")
+    def start_schedule(self):
         schedule_time = self.config.get("schedule_time", "08:00")
-        schedule.every().day.at(schedule_time).do(self.job)
+        schedule.every().day.at(schedule_time).do(self.daily_push)
         while True:
             schedule.run_pending()
             time.sleep(1)
 
-    def job(self):
+    def daily_push(self):
+        logger.info("Start daily push")
         single_chat_list = self.config.get("single_chat_list", [])
         group_chat_list = self.config.get("group_chat_list", [])
         content = self.get_weather()
@@ -92,7 +92,7 @@ class Weather(Plugin):
                     f"风速:\t {data['win_meter']}\n"
                     f"天气:\t {data['wea']}\n"
                     f"湿度:\t {data['humidity']}\n"
-                    f"\n" + "更新时间：{data['update_time']}"
+                    f"\n更新时间:\t {data['update_time']}"
                 )
             else:
                 text = "查询天气失败, 请稍后再试"
