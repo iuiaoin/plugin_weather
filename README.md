@@ -16,6 +16,6 @@ Add the following config in your wechat-gptbot's config.json:
 ]
 ```
 
-`app_id` and `app_secret` can be obtained from https://www.tianqiapi.com/index/doc?version=day for free.
+> `app_id` and `app_secret` can be obtained from https://www.tianqiapi.com/index/doc?version=day for free.
 
 Then the weather report will be sent to the group chat and private chat in the configuration every day~
