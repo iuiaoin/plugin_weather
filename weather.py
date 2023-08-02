@@ -1,12 +1,11 @@
 import requests
 import schedule
-import threading
+
+# import threading
+from multiprocessing import Process
 import time
-import json
 from plugins import register, Plugin, Event, logger
-from channel.wechat import WeChatChannel
-from utils.const import MessageType
-from utils.gen import gen_id
+from utils.api import send_txt
 
 
 @register
@@ -15,9 +14,11 @@ class Weather(Plugin):
 
     def __init__(self, config: dict):
         super().__init__(config)
-        self.channel = WeChatChannel()
-        scheduler_thread = threading.Thread(target=self.start_schedule)
-        scheduler_thread.start()
+        processed = Process(target=self.start_schedule, name="schedule")
+        processed.daemon = True
+        processed.start()
+        # scheduler_thread = threading.Thread(target=self.start_schedule)
+        # scheduler_thread.start()
 
     def did_receive_message(self, event: Event):
         pass
@@ -47,28 +48,9 @@ class Weather(Plugin):
         group_chat_list = self.config.get("group_chat_list", [])
         content = self.get_weather()
         for single_chat in single_chat_list:
-            reply_msg = self.serialize(content, None, single_chat)
-            self.channel.ws.send(reply_msg)
+            send_txt(content, single_chat)
         for group_chat in group_chat_list:
-            reply_msg = self.serialize(content, group_chat, None)
-            self.channel.ws.send(reply_msg)
-
-    def serialize(
-        self,
-        content,
-        room_id,
-        sender_id,
-    ) -> str:
-        msg = {
-            "id": gen_id(),
-            "type": MessageType.TXT_MSG.value,
-            "roomid": room_id or "null",
-            "wxid": sender_id or "null",
-            "content": content,
-            "nickname": "null",
-            "ext": "null",
-        }
-        return json.dumps(msg)
+            send_txt(content, group_chat)
 
     def get_weather(self) -> str:
         city = self.config.get("city", "北京")
