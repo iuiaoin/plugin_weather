@@ -1,8 +1,6 @@
 import requests
 import schedule
-
-# import threading
-from multiprocessing import Process
+import threading
 import time
 from plugins import register, Plugin, Event, logger
 from utils.api import send_txt
@@ -14,11 +12,8 @@ class Weather(Plugin):
 
     def __init__(self, config: dict):
         super().__init__(config)
-        processed = Process(target=self.start_schedule, name="schedule")
-        processed.daemon = True
-        processed.start()
-        # scheduler_thread = threading.Thread(target=self.start_schedule)
-        # scheduler_thread.start()
+        scheduler_thread = threading.Thread(target=self.start_schedule)
+        scheduler_thread.start()
 
     def did_receive_message(self, event: Event):
         pass
