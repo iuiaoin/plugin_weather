@@ -54,7 +54,7 @@ class Weather(Plugin):
         try:
             response = requests.get(
                 f"https://www.tianqiapi.com/free/day?appid={app_id}&appsecret={app_secret}&city={city}",
-                timeout=5,
+                timeout=30,
                 verify=False,
             )
             if response.status_code == 200 and "errcode" not in response.text:
